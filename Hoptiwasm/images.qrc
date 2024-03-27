@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/Switch.svg</file>
+        <file>images/Talker.svg</file>
+        <file>images/Listener.svg</file>
+    </qresource>
+</RCC>
