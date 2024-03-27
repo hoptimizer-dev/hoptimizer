@@ -3,5 +3,6 @@
         <file>images/Switch.svg</file>
         <file>images/Talker.svg</file>
         <file>images/Listener.svg</file>
+        <file>images/switch2.svg</file>
     </qresource>
 </RCC>

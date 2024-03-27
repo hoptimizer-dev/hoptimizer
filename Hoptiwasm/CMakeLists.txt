@@ -8,8 +8,10 @@ find_package(Qt6 6.4 REQUIRED COMPONENTS Quick)
 
 qt_standard_project_setup()
 
+set(CMAKE_AUTORCC ON)
 qt_add_executable(appHoptiwasm
     main.cpp
+    images.qrc # not sure if this is neededd here https://doc.qt.io/qt-6/resources.html
 )
 
 qt_add_qml_module(appHoptiwasm
