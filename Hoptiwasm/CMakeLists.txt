@@ -17,6 +17,7 @@ qt_add_executable(appHoptiwasm
 qt_add_qml_module(appHoptiwasm
     URI Hoptiwasm
     VERSION 1.0
+    RESOURCE_PREFIX /qt/qml
     QML_FILES Main.qml
     QML_FILES
     RESOURCES images.qrc
