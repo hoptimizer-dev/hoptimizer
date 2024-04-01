@@ -7,6 +7,9 @@ import Hoptiwasm
 ViewController {
     required property bool connectButtonChecked
 
+    connectionDragActive: conMechanism.connectionDragInProgress
+    connectionDragStart:conMechanism.connectionDragStart
+    connectionDragPosition: conMechanism.connectionDragPosition
     Component.onCompleted: controllerId = _mbackend.registerViewController(controller)
 
     width: 100
@@ -30,11 +33,6 @@ ViewController {
             sourceSize.height: parent.height * 2
             fillMode: Image.PreserveAspectFit
         }
-        // DragHandler{
-        //     // active: connectButton.checked
-        //     enabled: !connectButton.checked
-        //     grabPermissions: PointerHandler.TakeOverForbidden
-        // }
         MouseArea {
             id: moveObjectMouseArea
             anchors.fill: parent
@@ -42,35 +40,14 @@ ViewController {
             enabled: !connectButtonChecked//connectButton.checked
         }
 
-        MouseArea {
-            id: connectObjectsMouseArea
+        ConnectionMechanism {
+            id:conMechanism
             anchors.fill: parent
-            // drag.target: root
-            enabled: connectButtonChecked//connectButton.checked
-            // onClicked: console.log("muuuh")
-            drag.onActiveChanged: console.log("mushDrag")
-            drag.target: controller.dragTarget
-
+            controllerId: controller.controllerId
+            dragAllowed: connectButtonChecked
+            dropAllowance: connectButtonChecked
+            // rootViewItemX: 2//controller.parent
         }
-
-
     }
 
-
-    // Rectangle
-    // {
-
-    //     id: con1
-    //     width: 20
-    //     height: width
-    //     anchors.horizontalCenter: parent.left
-
-    //     y: parent.height / 3
-
-
-    //     radius: width / 2
-    //     border.width: 2
-    //     border.color: "black"
-    //     color: "steelblue"
-    // }
 }

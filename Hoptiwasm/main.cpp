@@ -4,8 +4,6 @@
 #include <QQmlContext>
 
 #include "backend.h"
-// #include "switchviewcontroller.h"
-// #include "endstationviewcontroller.h"
 
 int main(int argc, char *argv[])
 {
@@ -24,8 +22,6 @@ int main(int argc, char *argv[])
 
     engine.rootContext()->setContextProperty("_mbackend", main_backend::Instance());
     main_backend::Instance()->registerQmlCreatableObjects();
-    // qmlRegisterType<EndstationViewController>("Hoptiwasm", 1, 0, "EndstationViewContrller");
-    // qmlRegisterType<SwitchViewController>("Hoptiwasm", 1, 0, "SwitchViewController");
 
     engine.load(url);
 

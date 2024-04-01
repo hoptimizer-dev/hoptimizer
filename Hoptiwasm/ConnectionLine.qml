@@ -2,29 +2,46 @@ import QtQuick
 import QtQuick.Shapes
 
 Shape {
-    z: 2
-    property real dragStart: 0
-    property real dragEnd: 0
-    property bool draggin: false
+    z: 10
+    id:root
+    required property point lineStart//: 0
+    // onDragStartChanged: console.log("line start", lineStart)
+    required property point lineEnd//: 0
+    required property bool shouldBeVisible//: false
 
-    property alias endOfline: endOfLine
+    property real connectionLineEdgeSize: 10
 
-    visible: draggin
+    visible: shouldBeVisible
     ShapePath {
-
-        startX: 10
-        startY: 10
+        id: connectionPath
+        startX: lineStart.x
+        // onStartXChanged: console.log("stratx", startX)
+        startY: lineStart.y
         strokeColor: "black"
         strokeWidth: 3
         PathLine {
-            x: endOfLine.x
-            y: endOfLine.y
+
+            x: root.lineEnd.x
+            y: root.lineEnd.y
         }
     }
     Rectangle {
-        id: endOfLine
-        width: 10
-        height: 10
+        id:startOfLine
+        x: root.lineStart.x-radius
+        y: root.lineStart.y-radius
+        width: connectionLineEdgeSize
+        height: connectionLineEdgeSize
+        radius: connectionLineEdgeSize/2
+        color:"black"
+    }
 
+    Rectangle {
+        id: endOfLine
+        x: lineEnd.x-radius
+        y: lineEnd.y-radius
+        width: connectionLineEdgeSize
+        height: connectionLineEdgeSize
+        radius: connectionLineEdgeSize/2
+        color: "black"
     }
 }

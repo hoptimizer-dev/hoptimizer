@@ -4,7 +4,7 @@ project(Hoptiwasm VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Quick QuickControls2 Core)
 
 qt_standard_project_setup()
 
@@ -12,6 +12,8 @@ set(CMAKE_AUTORCC ON)
 qt_add_executable(appHoptiwasm
     main.cpp
     images.qrc # not sure if this is neededd here https://doc.qt.io/qt-6/resources.html
+    viewcontroller.h viewcontroller.cpp
+    endstationviewcontroller.h endstationviewcontroller.cpp
 )
 
 qt_add_qml_module(appHoptiwasm
@@ -27,6 +29,8 @@ qt_add_qml_module(appHoptiwasm
     SOURCES singletonpattern.h
     SOURCES backend.h backend.cpp
     SOURCES viewcontroller.h viewcontroller.cpp
+    SOURCES endstationviewcontroller.h endstationviewcontroller.cpp
+    QML_FILES ConnectionMechanism.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
@@ -44,6 +48,7 @@ target_link_libraries(appHoptiwasm
     PRIVATE
         Qt6::Quick
         Qt6::QuickControls2
+        Qt6::Core
 )
 
 include(GNUInstallDirs)

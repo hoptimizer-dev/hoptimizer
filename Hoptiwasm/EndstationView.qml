@@ -2,43 +2,49 @@ import QtQuick
 import QtQuick.Layouts
 import Hoptiwasm
 
-ViewController {
+EndstationViewController {
     id:controller
+    property alias talaState: controller.state
 
+    connectionDragActive: conMechanism.connectionDragInProgress
+    connectionDragStart:conMechanism.connectionDragStart
+    connectionDragPosition: conMechanism.connectionDragPosition
+
+    Component.onCompleted: {
+        controllerId = _mbackend.registerViewController(controller)
+        // _mbackend.registerEndstationViewController(controller);
+    }
+
+    required property bool canMove
+    property real textSize : 24
+
+    listenerLabelText: "L1" //listenerLabel.text
+    talkerLabelText: "T1" //talkerLabel.text
+
+    property bool listenerRowVisible: true
+    property bool talkerRowVisible: true
+
+    property bool latencyOk: true
+    property real talkerLatency: 0.25
+    property int talkerStreamSize: 4
+    property int listenerStreamSize: 4
 
     Rectangle {
+        id:contentRect
         color: "white"
         border.width: 2
         border.color: "black"
 
         property real tMargins:5
 
-
+        // anchors.left:parent
+        // anchors.fill: parent
 
         // height: 20
         // width: 60
         implicitWidth: rowboat.width
         implicitHeight: rowboat.height
 
-
-
-        property string listenerLabelText: "L1" //listenerLabel.text
-        property string talkerLabelText: "T1" //talkerLabel.text
-
-        property alias talaState: controller.state
-        required property bool canMove
-
-
-        property bool listenerRowVisible: true
-        property bool talkerRowVisible: true
-
-        property bool latencyOk: true
-        property real talkerLatency: 0.25
-        property int talkerStreamSize: 4
-        property int listenerStreamSize: 4
-
-
-        property real textSize : 24
         Rectangle {
             color: "lightgrey"
             anchors.fill: rowboat
@@ -228,10 +234,29 @@ ViewController {
         }
 
         MouseArea {
-            anchors.fill: controller
+            anchors.fill: contentRect
             drag.target: controller
-            enabled: canMove
+            enabled: controller.canMove
         }
+        // MouseArea {
+        //     anchors.fill: contentRect
+        //     enabled: !controller.canMove
+        //     hoverEnabled: true
+        //     onEntered: console.log("entered", controller.controllerId)
+        //     propagateComposedEvents: true
+        //     preventStealing: false
+        // }
+
+        ConnectionMechanism {
+            id: conMechanism
+            controllerId: controller.controllerId
+            dragAllowed: !controller.canMove
+            dropAllowance: !controller.canMove
+            anchors.fill: parent
+            // rootViewItemX: 2//controller.parent
+        }
+
+
     }
     states: [
         State {
