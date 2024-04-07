@@ -70,8 +70,8 @@ EndstationViewController {
                 // spacing: 10
                 columnSpacing: 1
                 rowSpacing: 1
-                uniformCellHeights: true
-                uniformCellWidths: true
+                // uniformCellHeights: true
+                // uniformCellWidths: true
                 Rectangle {
                     id: listenerLabelRect
                     visible: listenerRowVisible
