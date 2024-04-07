@@ -1,0 +1,113 @@
+name: WASM Build
+on: [push, pull_request]
+
+env:
+  QT_VERSION: 6.6.3
+  EM_VERSION: 3.1.37
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    env:
+      CC: emcc
+      CXX: em++
+
+    steps:
+      - name: Job info
+        run: |
+          echo "GitHub Ref: ${{ github.ref }}"
+          echo "Event: ${{ github.event }}"
+
+      - name: get container ready for build
+        run: |
+          sudo apt-get update
+          sudo apt-get upgrade -y
+          DEBIAN_FRONTEND=noninteractive sudo apt-get install -y -q --force-yes \
+          automake cmake git wget libfuse2 desktop-file-utils tree \
+          build-essential libgl1-mesa-dev libxkbcommon-x11-0 libpulse-dev \
+          libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
+          libxcb-xinerama0 libxcb-composite0 libxcb-cursor0 libxcb-damage0 \
+          libxcb-dpms0 libxcb-dri2-0 libxcb-dri3-0 libxcb-ewmh2 libxcb-glx0 \
+          libxcb-present0 libxcb-randr0 libxcb-record0 libxcb-render0 libxcb-res0 \
+          libxcb-screensaver0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libegl1 libegl1-mesa-dev
+
+      - name: checkout sources
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install Qt (Host)
+        uses: jurplel/install-qt-action@v3
+        with:
+          aqtversion: "==3.1.*"
+          py7zrversion: ">=0.20.2"
+          version: "${{ env.QT_VERSION }}"
+          host: "linux"
+          target: "desktop"
+          arch: "gcc_64"
+          cache: "true"
+          cache-key-prefix: "install-qt-host-${{ env.QT_VERSION }}"
+          modules: "qtcharts"
+
+      - name: Install Qt (Emscripten)
+        uses: jurplel/install-qt-action@v3
+        with:
+          aqtversion: "==3.1.*"
+          py7zrversion: ">=0.20.2"
+          version: "${{ env.QT_VERSION }}"
+          host: "linux"
+          target: "desktop"
+          arch: "wasm_singlethread"
+          modules: "qtcharts"
+          cache: "true"
+          cache-key-prefix: "install-qt-emscripten-${{ env.QT_VERSION }}"
+
+      - name: install Emscripten
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install  ${{ env.EM_VERSION }}
+          ./emsdk activate ${{ env.EM_VERSION }}
+
+      - name: build
+        run: |
+          echo "building wasm"
+          source emsdk/emsdk_env.sh
+          export QT_HOST_PATH=$(pwd)/../Qt/${{ env.QT_VERSION }}/gcc_64/
+          cmake                                           \
+            -B build -S Hoptiwasm                         \
+            -DCMAKE_BUILD_TYPE=Release                    \
+            -DEMSCRIPTEN=1                                \
+            -DQT_HOST_PATH="${QT_HOST_PATH}"              \
+            -DCMAKE_TOOLCHAIN_FILE=$(pwd)/../Qt/${{ env.QT_VERSION }}/wasm_singlethread/lib/cmake/Qt6/qt.toolchain.cmake \
+            -DCMAKE_PREFIX_PATH=$(pwd)/../Qt/${{ env.QT_VERSION }}/wasm_singlethread/ \
+            -DEMSCRIPTEN_FORCE_COMPILERS=ON
+          cmake --build build --target package
+
+      - name: archive
+        uses: actions/upload-artifact@v2
+        with:
+          name: hoptimizer_wasm
+          path: build/*.zip
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-20.04
+    needs: build
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: hoptimizer_wasm
+          path: .
+      - name: unzip
+        run: unzip -j *.zip -d deploy
+      - name: upload
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete
+          path: deploy/
+          remote_path: /public
+          remote_host: hoptimizer.net
+          remote_user: hoptimizer
+          remote_key: ${{ secrets.DEPLOY_KEY }}

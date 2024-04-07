@@ -2,6 +2,8 @@
 
 **WIP** not finished yet but it is basically working.
 
+[![WASM Build](https://github.com/hoptimizer-dev/hoptimizer/actions/workflows/build-wasm.yaml/badge.svg)](https://github.com/hoptimizer-dev/hoptimizer/actions/workflows/build-wasm.yaml)
+
 this is a test example to showcase Webassembly in combination with Qt/qml
 
 ## Installation procedure
