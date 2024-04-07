@@ -1,0 +1,32 @@
+name: WASM Deploy
+on:
+  # the 1st condition
+  workflow_run:
+    workflows: ["WASM Build"]
+    branches: [main]
+    types:
+      - completed
+jobs:
+  deploy:
+    strategy:
+      matrix:
+        build-type: [Release]
+
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.build-type }}_wasm
+          path: .
+      - name: unzip
+        run: unzip *.zip -d deploy
+      - name: upload
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete
+          path: deploy/
+          remote_path: /public
+          remote_host: hoptimizer.net
+          remote_user: hoptimizer
+          remote_key: ${{ secrets.DEPLOY_KEY }}
