@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           run_id: ${{ github.event.workflow_run.id }}
           name: ${{ matrix.build-type }}_wasm
