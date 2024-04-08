@@ -1,4 +1,4 @@
-name: WASM / Qt
+name: WASM Build
 on:
   push:
     branches:
