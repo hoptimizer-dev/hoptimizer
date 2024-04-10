@@ -6,7 +6,20 @@ env:
   EM_VERSION: 3.1.37
 
 jobs:
+  pre_job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: same_content
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+
   build:
+    needs: pre_job
+    if: needs.pre_job.outputs.should_skip != 'true'
     runs-on: ubuntu-20.04
     env:
       CC: emcc
@@ -18,7 +31,7 @@ jobs:
           echo "GitHub Ref: ${{ github.ref }}"
           echo "Event: ${{ github.event }}"
 
-      - name: get container ready for build
+      - name: Setup system
         run: |
           sudo apt-get update
           sudo apt-get upgrade -y
@@ -31,8 +44,8 @@ jobs:
           libxcb-present0 libxcb-randr0 libxcb-record0 libxcb-render0 libxcb-res0 \
           libxcb-screensaver0 libxcb-shape0 libxcb-shm0 libxcb-sync1 libxcb-util1 libegl1 libegl1-mesa-dev
 
-      - name: checkout sources
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
@@ -40,21 +53,17 @@ jobs:
       - name: Install Qt (Host)
         uses: jurplel/install-qt-action@v3
         with:
-          aqtversion: "==3.1.*"
-          py7zrversion: ">=0.20.2"
           version: "${{ env.QT_VERSION }}"
           host: "linux"
           target: "desktop"
           arch: "gcc_64"
           cache: "true"
-          cache-key-prefix: "install-qt-host-${{ env.QT_VERSION }}"
+          cache-key-prefix: "install-qt-gcc_64-${{ env.QT_VERSION }}"
           modules: "qtcharts"
 
       - name: Install Qt (Emscripten)
         uses: jurplel/install-qt-action@v3
         with:
-          aqtversion: "==3.1.*"
-          py7zrversion: ">=0.20.2"
           version: "${{ env.QT_VERSION }}"
           host: "linux"
           target: "desktop"
@@ -63,14 +72,14 @@ jobs:
           cache: "true"
           cache-key-prefix: "install-qt-emscripten-${{ env.QT_VERSION }}"
 
-      - name: install Emscripten
+      - name: Install Emscripten
         run: |
           git clone https://github.com/emscripten-core/emsdk.git
           cd emsdk
           ./emsdk install  ${{ env.EM_VERSION }}
           ./emsdk activate ${{ env.EM_VERSION }}
 
-      - name: build
+      - name: Build WebApp
         run: |
           echo "building wasm"
           source emsdk/emsdk_env.sh
@@ -85,8 +94,8 @@ jobs:
             -DEMSCRIPTEN_FORCE_COMPILERS=ON
           cmake --build build --target package
 
-      - name: archive
-        uses: actions/upload-artifact@v2
+      - name: Archive
+        uses: actions/upload-artifact@v4
         with:
           name: hoptimizer_wasm
           path: build/*.zip
@@ -96,13 +105,13 @@ jobs:
     needs: build
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: hoptimizer_wasm
           path: .
-      - name: unzip
+      - name: Unzip
         run: unzip -j *.zip -d deploy
-      - name: upload
+      - name: Upload
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -avzr --delete
