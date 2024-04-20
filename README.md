@@ -2,6 +2,10 @@
 
 **WIP** not finished yet but it is basically working.
 
+[![WASM Build](https://github.com/hoptimizer-dev/hoptimizer/actions/workflows/build-wasm.yaml/badge.svg)](https://github.com/hoptimizer-dev/hoptimizer/actions/workflows/build-wasm.yaml)
+
+[![macOS Build](https://github.com/hoptimizer-dev/hoptimizer/actions/workflows/build-macos.yaml/badge.svg?branch=main)](https://github.com/hoptimizer-dev/hoptimizer/actions/workflows/build-macos.yaml)
+
 this is a test example to showcase Webassembly in combination with Qt/qml
 
 ## Installation procedure

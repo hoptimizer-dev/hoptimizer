@@ -1,0 +1,62 @@
+name: macOS Build
+on: [push, pull_request]
+
+env:
+  QT_VERSION: 6.6.3
+
+jobs:
+  pre_job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: same_content
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+
+  build:
+    needs: pre_job
+    if: needs.pre_job.outputs.should_skip != 'true'
+    runs-on: macos-latest
+    steps:
+      - name: Job info
+        run: |
+          echo "GitHub Ref: ${{ github.ref }}"
+          echo "Event: ${{ github.event }}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Setup system
+        run: |
+          brew install ninja
+          brew install cmake
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: "${{ env.QT_VERSION }}"
+          host: "mac"
+          target: "desktop"
+          arch: "clang_64"
+          cache: "true"
+          cache-key-prefix: "install-qt-host-clang_64-${{ env.QT_VERSION }}"
+
+      - name: Build macOS DMG
+        run: |
+          export QT_HOST_PATH=$(pwd)/../Qt/${{ env.QT_VERSION }}/clang-64/
+          cmake                                           \
+            -B build -S Hoptiwasm                         \
+            -G "Ninja Multi-Config"                       \
+            -DCMAKE_PREFIX_PATH="${QT_HOST_PATH}"
+          cmake --build build --config Release --target package
+
+      - name: Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: hoptimizer_macos
+          path: build/*.dmg
